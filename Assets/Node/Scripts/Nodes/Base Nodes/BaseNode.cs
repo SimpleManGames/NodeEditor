@@ -12,11 +12,25 @@ public abstract class BaseNode : ScriptableObject {
         set { _windowRect = value; }
     }
 
+    private Rect _handleArea;
+    /// <summary> Stores the Rect on the resize handle </summary>
+    public Rect HandleArea {
+        get { return _handleArea; }
+        set { _handleArea = value; }
+    }
+
     private bool _hasInputs = false;
     /// <summary> Indicates if the decendant of the baseNode has inputs or can only be used as an input to another node </summary>
     public bool HasInputs {
         get { return _hasInputs; }
         set { _hasInputs = value; }
+    }
+
+    private bool _resizable = true;
+    /// <summary> Used to see if the node is resizable in the editor </summary>
+    public bool Resizable {
+        get { return _resizable; }
+        set { _resizable = value; }
     }
 
     private string _windowTitle = "";

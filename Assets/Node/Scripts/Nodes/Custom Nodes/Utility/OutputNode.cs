@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEditor;
 
 //inherits from base node
-public class OutputNode : BaseNode {
+public class OutputNode : BaseInputNode {
 
     //variable we use for visualizing the result
     private string result = "";

@@ -2,12 +2,16 @@
 using System.Collections;
 using UnityEditor;
 
-public class GameObjectActive : BaseNode {
+public class GameObjectActive : BaseInputNode {
 
     private BaseInputNode input1;
     private Rect input1Rect;
 
     private GameObject controlledObject;
+
+    public GameObjectActive() {
+        WindowTitle = "GameObject Active";
+    } 
 
     public override void DrawWindow() {
         base.DrawWindow();
@@ -25,15 +29,16 @@ public class GameObjectActive : BaseNode {
 
         //we make the object field for the user to drop tha gameobject
         controlledObject = (GameObject)EditorGUILayout.ObjectField(controlledObject, typeof(GameObject), true);
-
-
     }
 
     public override void Tick(float deltaTime) {
         if(input1 != null) 
             if(controlledObject) 
-                if(input1.getResult().Equals("true")) { controlledObject.SetActive(true);
-                } else { controlledObject.SetActive(false); }
+                if(input1.getResult().Equals("true")) {
+                    controlledObject.SetActive(true);
+                } else {
+                    controlledObject.SetActive(false);
+                }
     }
 
     public override void SetInput(BaseInputNode input, Vector2 clickPos) {

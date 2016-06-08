@@ -1,9 +1,12 @@
-﻿using UnityEngine;
+﻿#define DEBUG
+
+using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
 
 //inherits from EditorWindow  
-public class NodeEditor : EditorWindow {
+public class NodeEditor : EditorWindow
+{
     private const int PANSPEED = 5;
 
     //list that stores our windows
@@ -24,16 +27,13 @@ public class NodeEditor : EditorWindow {
     private int _mainwindowID;
 
     private int _winMinX, _winMinY;
-    private bool resizeMode = false;
 
     private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
     float PanY;
     float PanX;
-    Vector2 mouseDiff = new Vector2(0, 0);
 
     private bool scrollWindow = false;
-    private Vector2 scrollStartMousePos;
 
     //In order to be accessible the window from the menue we add a menu item
     [MenuItem("Window/Node Editor")]
@@ -41,7 +41,7 @@ public class NodeEditor : EditorWindow {
         NodeEditor editor = EditorWindow.GetWindow<NodeEditor>();
 
         editor.stopWatch.Start();
-        editor._winMinX = editor._winMinY = 100;
+        editor._winMinX = editor._winMinY = 50;
         editor._resizeHandle = AssetDatabase.LoadAssetAtPath("Assets/Node/Textures/PNG/ResizeHandle.png", typeof(Texture2D)) as Texture2D;
         editor._icon = new GUIContent(editor._resizeHandle);
         editor._mainwindowID = GUIUtility.GetControlID(FocusType.Native);
@@ -50,9 +50,9 @@ public class NodeEditor : EditorWindow {
     void Update() {
         long dTime = stopWatch.ElapsedMilliseconds;
 
-        float deltaTime = ( (float)dTime ) / 1000;
+        float deltaTime = ((float)dTime) / 1000;
 
-        foreach(BaseNode b in windows) { b.Tick(deltaTime); }
+        foreach (BaseNode b in windows) { b.Tick(deltaTime); }
 
         stopWatch.Reset();
         stopWatch.Start();
@@ -67,14 +67,14 @@ public class NodeEditor : EditorWindow {
         //check mouse position
         mousePos = e.mousePosition;
 
-        if(e.button == 1 && !makeTransitionMode) {
-            if(e.type == EventType.MouseDown) {
+        if (e.button == 1 && !makeTransitionMode) {
+            if (e.type == EventType.MouseDown) {
                 bool clickedOnWindow = false;
                 int selectedIndex = -1;
 
                 //check to see if he clicked inside a window
-                for(int i = 0; i < windows.Count; i++)
-                    if(windows[i].WindowRect.Contains(mousePos)) {
+                for (int i = 0; i < windows.Count; i++)
+                    if (windows[i].WindowRect.Contains(mousePos)) {
                         //if he clicked store the i
                         selectedIndex = i;
                         //we clicked on a window
@@ -85,7 +85,7 @@ public class NodeEditor : EditorWindow {
 
 
                 //if we didn't clicked a window
-                if(!clickedOnWindow) {
+                if (!clickedOnWindow) {
                     //make a new menu for every different case 
                     GenericMenu menu = new GenericMenu();
 
@@ -94,9 +94,11 @@ public class NodeEditor : EditorWindow {
                     menu.AddItem(new GUIContent("Math/Add Calculation Node"), false, ContextCallback, "calcNode");
                     menu.AddItem(new GUIContent("Math/Add Comparison Node"), false, ContextCallback, "compNode");
                     menu.AddSeparator("");
+                    menu.AddItem(new GUIContent("GameObject/Add GameObject Node"), false, ContextCallback, "goObj");
                     menu.AddItem(new GUIContent("GameObject/Add GameObject Active Node"), false, ContextCallback, "goActive");
                     menu.AddItem(new GUIContent("GameObject/Add GameObject Distance Node"), false, ContextCallback, "goDistance");
                     menu.AddItem(new GUIContent("Utility/Add Timer Node"), false, ContextCallback, "timerNode");
+                    menu.AddItem(new GUIContent("Utility/Add Bool Node"), false, ContextCallback, "boolNode");
                     menu.AddSeparator("");
                     menu.AddItem(new GUIContent("Clear All Nodes"), false, ContextCallback, "clearAll");
                     menu.AddItem(new GUIContent("Reset"), false, ContextCallback, "reset");
@@ -118,20 +120,20 @@ public class NodeEditor : EditorWindow {
                 }
             }
         } //if we are in a transition mode and there is a left click
-        else if(e.button == 0 && e.type == EventType.MouseDown && makeTransitionMode) {
+        else if (e.button == 0 && e.type == EventType.MouseDown && makeTransitionMode) {
             bool clickedOnWindow = false;
             int selectedIndex = -1;
 
             //find which window was clicked
-            for(int i = 0; i < windows.Count; i++)
-                if(windows[i].WindowRect.Contains(mousePos)) {
+            for (int i = 0; i < windows.Count; i++)
+                if (windows[i].WindowRect.Contains(mousePos)) {
                     selectedIndex = i;
                     clickedOnWindow = true;
                     break;
                 }
 
             //if there is a click on a window and it's not the window that the transition started from
-            if(clickedOnWindow && !windows[selectedIndex].Equals(selectedNode)) {
+            if (clickedOnWindow && !windows[selectedIndex].Equals(selectedNode)) {
                 //call the set Input on the selected window in order to evaluate if the selected node will be used as input
                 windows[selectedIndex].SetInput((BaseInputNode)selectedNode, mousePos);
                 makeTransitionMode = false;
@@ -139,7 +141,7 @@ public class NodeEditor : EditorWindow {
             }
 
             //if we didn't clicked on a window
-            if(!clickedOnWindow) {
+            if (!clickedOnWindow) {
                 //then stop the transition
                 makeTransitionMode = false;
                 selectedNode = null;
@@ -147,13 +149,13 @@ public class NodeEditor : EditorWindow {
 
             e.Use();
         }  //if there is a left click and we are not in a transition mode
-        else if(e.button == 0 && e.type == EventType.MouseDown && !makeTransitionMode) {
+        else if (e.button == 0 && e.type == EventType.MouseDown && !makeTransitionMode) {
             bool clickedOnWindow = false;
             int selectedIndex = -1;
 
             //same as above
-            for(int i = 0; i < windows.Count; i++)
-                if(windows[i].WindowRect.Contains(mousePos)) {
+            for (int i = 0; i < windows.Count; i++)
+                if (windows[i].WindowRect.Contains(mousePos)) {
                     selectedIndex = i;
                     clickedOnWindow = true;
                     break;
@@ -161,26 +163,21 @@ public class NodeEditor : EditorWindow {
 
 
             //if we clicked on a window
-            if(clickedOnWindow) {
+            if (clickedOnWindow) {
                 //evaluate if an input of the node was clicked
                 BaseInputNode nodeToChange = windows[selectedIndex].ClickedOnInput(mousePos);
 
                 //if node to change is not null means that an input was clicked
-                if(nodeToChange != null) {
+                if (nodeToChange != null) {
                     //so set the node to the transition mode
                     selectedNode = nodeToChange;
                     makeTransitionMode = true;
-                }
-
-                // Check to see if resize handle was clicked
-                if(windows[selectedIndex].HandleArea.Contains(mousePos) && windows[selectedIndex].Resizable) {
-                    resizeMode = true;
                 }
             }
         }
 
         //if we are in a transition mode and there is a selected node
-        if(makeTransitionMode && selectedNode != null) {
+        if (makeTransitionMode && selectedNode != null) {
             //draw the curve from the selected node to the mouse position
             Rect mouseRect = new Rect(e.mousePosition.x, e.mousePosition.y, 10, 10);
 
@@ -192,12 +189,12 @@ public class NodeEditor : EditorWindow {
         GUI.BeginGroup(new Rect(PanX, PanY, 100000, 100000));
 
         //draw each curve for every node
-        foreach(BaseNode n in windows) { n.DrawCurves(); }
+        foreach (BaseNode n in windows) { n.DrawCurves(); }
 
         //draw the actual windows
         BeginWindows();
 
-        for(int i = 0; i < windows.Count; i++) {
+        for (int i = 0; i < windows.Count; i++) {
             windows[i].WindowRect = GUI.Window(i
                 , new Rect(windows[i].WindowRect.x + PanX, windows[i].WindowRect.y + PanY,
                   windows[i].WindowRect.size.x, windows[i].WindowRect.size.y)
@@ -228,35 +225,27 @@ public class NodeEditor : EditorWindow {
         //    PanY += mouseDiff.y / 100;
         //}
 
-        if(GUI.RepeatButton(new Rect(position.width / 2 - ( position.width / 10 ) / 2, 5
-                                    , position.width / 10, 20)
-                                    , "^")) {
+        bool topButton = GUI.RepeatButton(new Rect(position.width / 2 - (position.width / 10) / 2, 5, position.width / 10, 20), "^");
+        bool leftButton = GUI.RepeatButton(new Rect(5, position.height / 2 - (position.height / 10) / 2, 20, position.height / 10), "<");
+        bool rightButton = GUI.RepeatButton(new Rect(position.width - 25, position.height / 2 - (position.height / 10) / 2, 20, position.height / 10), ">");
+        bool bottomButton = GUI.RepeatButton(new Rect(position.width / 2 - (position.width / 10) / 2, position.height - 25, position.width / 10, 20), "v");
+
+        if (topButton) {
             PanY -= PANSPEED;
             Repaint();
-        } else if(GUI.RepeatButton(new Rect(5, position.height / 2 - ( position.height / 10 ) / 2
-                                           , 20, position.height / 10)
-                                           , "<")) {
+        } else if (leftButton) {
             PanX -= PANSPEED;
             Repaint();
-        } else if(GUI.RepeatButton(new Rect(position.width - 25, position.height / 2 - ( position.height / 10 ) / 2
-                                           , 20, position.height / 10)
-                                           , ">")) {
+        } else if (rightButton) {
             PanX += PANSPEED;
             Repaint();
-        } else if(GUI.RepeatButton(new Rect(position.width / 2 - ( position.width / 10 ) / 2, position.height - 25
-                                           , position.width / 10, 20)
-                                           , "v")) {
+        } else if (bottomButton) {
             PanY += PANSPEED;
             Repaint();
         } else
             PanX = PanY = 0;
 
-        foreach(BaseNode n in windows) {
-            EditorGUI.DrawRect(n.WindowRect, new Color(1, 0, 0, .2f));
-            EditorGUI.DrawRect(n.HandleArea, new Color(0, 1, 0, .2f));
-        }
-
-        if(( Event.current.rawType == EventType.MouseUp ) && ( GUIUtility.hotControl != _mainwindowID )) {
+        if ((Event.current.rawType == EventType.MouseUp) && (GUIUtility.hotControl != _mainwindowID)) {
             GUIUtility.hotControl = 0;
         }
     }
@@ -264,22 +253,20 @@ public class NodeEditor : EditorWindow {
     //function that draws the windows
     void DrawNodeWindow(int id) {
         windows[id].DrawWindow();
-        GUI.DragWindow();
-
 
         float _cornerX = windows[id].WindowRect.width;
         float _cornerY = windows[id].WindowRect.height;
 
-        if(GUIUtility.hotControl == 0) { windows[id].Resizable = false; }
+        if (GUIUtility.hotControl == 0) { windows[id].Resizable = false; }
 
         GUILayout.BeginArea(new Rect(1, _cornerY - 16, _cornerX - 3, 14));
         GUILayout.BeginHorizontal(EditorStyles.toolbarTextField, GUILayout.ExpandWidth(true));
         GUILayout.FlexibleSpace();
 
         windows[id].HandleArea = GUILayoutUtility.GetRect(_icon, GUIStyle.none);
-        GUI.DrawTexture(new Rect(windows[id].HandleArea.xMin + 6, windows[id].HandleArea.yMin - 3, 20, 20), _resizeHandle);
-        if(!windows[id].Resizable && ( ( Event.current.type == EventType.MouseDown ) || ( Event.current.type == EventType.MouseDrag ) )) {
-            if(windows[id].HandleArea.Contains(Event.current.mousePosition, true)) {
+        GUI.DrawTexture(new Rect(windows[id].HandleArea.xMin + 3, windows[id].HandleArea.yMin - 3, 20, 20), _resizeHandle);
+        if (!windows[id].Resizable && ((Event.current.type == EventType.MouseDown) || (Event.current.type == EventType.MouseDrag))) {
+            if (windows[id].HandleArea.Contains(Event.current.mousePosition, true)) {
                 windows[id].Resizable = true;
                 GUIUtility.hotControl = GUIUtility.GetControlID(FocusType.Native);
             }
@@ -288,104 +275,123 @@ public class NodeEditor : EditorWindow {
         GUILayout.EndHorizontal();
         GUILayout.EndArea();
 
-        if(windows[id].Resizable && (Event.current.type == EventType.mouseDrag)) {
+        if (windows[id].Resizable && (Event.current.type == EventType.mouseDrag)) {
             ResizeNode(id, Event.current.delta.x, Event.current.delta.y);
             Repaint();
             Event.current.Use();
         }
-        
+        GUI.DragWindow();
+
     }
 
-    
+
     void ResizeNode(int id, float deltaX, float deltaY) {
-        windows[id].WindowRect = new Rect(windows[id].WindowRect.position.x, windows[id].WindowRect.position.y
-            , ( ( windows[id].WindowRect.width + deltaX ) > _winMinX ) ? windows[id].WindowRect.width + deltaX : windows[id].WindowRect.width
-            , ( ( windows[id].WindowRect.height + deltaY ) > _winMinY ) ? windows[id].WindowRect.height + deltaY : windows[id].WindowRect.height);
+        float targetWidth = windows[id].WindowRect.width;
+        float targetHeight = windows[id].WindowRect.height;
+
+        if ((windows[id].WindowRect.width + deltaX) > _winMinX)
+            targetWidth = windows[id].WindowRect.width + deltaX;
+
+        if ((windows[id].WindowRect.height + deltaY) > _winMinY)
+            targetHeight = windows[id].WindowRect.height + deltaY;
+
+        windows[id].WindowRect = new Rect(windows[id].WindowRect.position.x, windows[id].WindowRect.position.y,
+                                          targetWidth, targetHeight);
     }
-    
+
     //Is called when a selection from the context menu is made
     void ContextCallback(object obj) {
         //make the passed object to a string
         string clb = obj.ToString();
 
         //add the node we want
-        if(clb.Equals("inputNode")) {
+        if (clb.Equals("inputNode")) {
             InputNode inputNode = ScriptableObject.CreateInstance<InputNode>();
             inputNode.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 80);
 
             windows.Add(inputNode);
-        } else if(clb.Equals("outputNode")) {
+        } else if (clb.Equals("outputNode")) {
             OutputNode outputNode = ScriptableObject.CreateInstance<OutputNode>();
             outputNode.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 80);
 
             windows.Add(outputNode);
-        } else if(clb.Equals("calcNode")) {
+        } else if (clb.Equals("calcNode")) {
             CalcNode calcNode = ScriptableObject.CreateInstance<CalcNode>();
             calcNode.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 95);
 
             windows.Add(calcNode);
-        } else if(clb.Equals("compNode")) {
+        } else if (clb.Equals("compNode")) {
             ComparisonNode compNode = ScriptableObject.CreateInstance<ComparisonNode>();
             compNode.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 95);
 
             windows.Add(compNode);
-        } else if(clb.Equals("goActive")) {
+        } else if (clb.Equals("goObj")) {
+            GameObjectNode goObj = ScriptableObject.CreateInstance<GameObjectNode>();
+            goObj.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 100);
+
+            windows.Add(goObj);
+        } else if (clb.Equals("goActive")) {
             GameObjectActive goNode = ScriptableObject.CreateInstance<GameObjectActive>();
             goNode.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 80);
 
             windows.Add(goNode);
-        } else if(clb.Equals("goDistance")) {
+        } else if (clb.Equals("goDistance")) {
             GameObjectDistance goDistance = ScriptableObject.CreateInstance<GameObjectDistance>();
             goDistance.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 80);
 
             windows.Add(goDistance);
-        } else if(clb.Equals("timerNode")) {
+        } else if (clb.Equals("timerNode")) {
             TimerNode tNode = ScriptableObject.CreateInstance<TimerNode>();
             tNode.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 95);
 
             windows.Add(tNode);
-        } else if(clb.Equals("clearAll")) {
+        } else if (clb.Equals("boolNode")) {
+            BoolNode bNode = ScriptableObject.CreateInstance<BoolNode>();
+            bNode.WindowRect = new Rect(mousePos.x, mousePos.y, 120, 75);
+
+            windows.Add(bNode);
+        } else if (clb.Equals("clearAll")) {
             windows.Clear();
 
-        } else if(clb.Equals("reset")) {
+        } else if (clb.Equals("reset")) {
             PanX = PanY = 0;
 
-        } else if(clb.Equals("makeTransition")) { //if it's a transition
+        } else if (clb.Equals("makeTransition")) { //if it's a transition
             bool clickedOnWindow = false;
             int selectedIndex = -1;
             //find the window that it was clicked
-            for(int i = 0; i < windows.Count; i++)
-                if(windows[i].WindowRect.Contains(mousePos)) {
+            for (int i = 0; i < windows.Count; i++)
+                if (windows[i].WindowRect.Contains(mousePos)) {
                     selectedIndex = i;
                     clickedOnWindow = true;
                     break;
                 }
 
             //and make it the selected node of the transition
-            if(clickedOnWindow) {
+            if (clickedOnWindow) {
                 selectedNode = windows[selectedIndex];
                 makeTransitionMode = true;
             }
 
-        } else if(clb.Equals("deleteNode")) { //if it's a delete node 
+        } else if (clb.Equals("deleteNode")) { //if it's a delete node 
             bool clickedOnWindow = false;
             int selectedIndex = -1;
 
             //find the selected node
-            for(int i = 0; i < windows.Count; i++)
-                if(windows[i].WindowRect.Contains(mousePos)) {
+            for (int i = 0; i < windows.Count; i++)
+                if (windows[i].WindowRect.Contains(mousePos)) {
                     selectedIndex = i;
                     clickedOnWindow = true;
                     break;
                 }
 
-            if(clickedOnWindow) {
+            if (clickedOnWindow) {
                 //delete it from our list
                 BaseNode selNode = windows[selectedIndex];
                 windows.RemoveAt(selectedIndex);
 
                 //then pass it to all our nodes that is deleted
-                foreach(BaseNode n in windows) { n.NodeDeleted(selNode); }
+                foreach (BaseNode n in windows) { n.NodeDeleted(selNode); }
             }
         }
 
@@ -403,8 +409,8 @@ public class NodeEditor : EditorWindow {
         Vector3 endTan = endPos + Vector3.left * 50;
         Color shadowCol = new Color(0, 0, 0, 0.06f);
 
-        for(int i = 0; i < 3; i++) {// Draw a shadow
-            Handles.DrawBezier(startPos, endPos, startTan, endTan, shadowCol, null, ( i + 1 ) * 5);
+        for (int i = 0; i < 3; i++) {// Draw a shadow
+            Handles.DrawBezier(startPos, endPos, startTan, endTan, shadowCol, null, (i + 1) * 5);
         }
 
         Handles.DrawBezier(startPos, endPos, startTan, endTan, Color.black, null, 1);

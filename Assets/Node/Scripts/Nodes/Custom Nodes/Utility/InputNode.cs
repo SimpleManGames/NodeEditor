@@ -19,7 +19,10 @@ public class InputNode : BaseInputNode {
     private string inputValue = "";
 
     //We add a default value on the input node
-    public InputNode() { WindowTitle = "Input Node"; }
+    public InputNode() {
+        WindowTitle = "Input Node";
+        Resizable = true;
+    }
 
     //we pass the abstract DrawWindow
     public override void DrawWindow() {
@@ -43,7 +46,6 @@ public class InputNode : BaseInputNode {
         }
 
         nodeResult = inputValue.ToString();
-
     }
 
     //Pass the abstract class

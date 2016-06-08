@@ -10,6 +10,7 @@ public class GameObjectDistance : BaseInputNode {
     public GameObjectDistance() {
         WindowTitle = "GameObject Distance";
         HasInputs = false;
+        Resizable = true;
     }
 
     public override void DrawWindow() {

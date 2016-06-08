@@ -39,7 +39,7 @@ public abstract class BaseNode : ScriptableObject {
         get { return _windowTitle; }
         set { _windowTitle = value; }
     }
-
+    
     //Draw the window of the base node, this is virtual and will be implemented by each subclass of baseNode
     public virtual void DrawWindow() {
         //We want each node to have a title which the user can modify

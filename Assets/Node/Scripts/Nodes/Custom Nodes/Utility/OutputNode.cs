@@ -5,9 +5,12 @@ using UnityEditor;
 //inherits from base node
 public class OutputNode : BaseInputNode
 {
+<<<<<<< HEAD
     //variable we use for visualizing the result
     private string _result = "";
 
+=======
+>>>>>>> 27624d0721bc4461d34bcd0f50c232b8582de52d
     //The output node has only one input
     private BaseInputNode _inputNode;
     private Rect _inputNodeRect;
@@ -46,9 +49,12 @@ public class OutputNode : BaseInputNode
             _inputNodeRect = GUILayoutUtility.GetLastRect();
             _inputNodeRect.width = 50;
         }
+<<<<<<< HEAD
 
         //draw a label with the result
         GUILayout.Label("Result: " + _result);
+=======
+>>>>>>> 27624d0721bc4461d34bcd0f50c232b8582de52d
     }
 
 

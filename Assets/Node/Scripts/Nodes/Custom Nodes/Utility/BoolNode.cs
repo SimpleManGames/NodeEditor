@@ -15,7 +15,11 @@ public class BoolNode : BaseInputNode
     public override void DrawWindow() {
         base.DrawWindow();
 
+<<<<<<< HEAD
         Event e = Event.current;
+=======
+        //Event e = Event.current;
+>>>>>>> 27624d0721bc4461d34bcd0f50c232b8582de52d
 
         value = GUILayout.Toggle(value, "Toggle");
 

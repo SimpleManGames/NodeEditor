@@ -18,7 +18,11 @@ public class GameObjectNode : BaseInputNode {
     public override void DrawWindow() {
         base.DrawWindow();
 
+<<<<<<< HEAD
         Event e = Event.current;
+=======
+        //Event e = Event.current;
+>>>>>>> 27624d0721bc4461d34bcd0f50c232b8582de52d
         if (controlledObject == null) 
             if (GUILayout.Button("Create GameObject"))
                 controlledObject = new GameObject();

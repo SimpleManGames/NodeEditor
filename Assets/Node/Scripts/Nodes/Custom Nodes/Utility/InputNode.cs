@@ -8,7 +8,8 @@ public class InputNode : BaseInputNode {
     //We want to have two types of input, a user inputed number or a random number
     private InputType inputType;
     public enum InputType {
-        Number,
+        Int,
+        Float,
         Randomization
     }
 
@@ -19,7 +20,10 @@ public class InputNode : BaseInputNode {
     private string inputValue = "";
 
     //We add a default value on the input node
-    public InputNode() { WindowTitle = "Input Node"; }
+    public InputNode() {
+        WindowTitle = "Input Node";
+        Resizable = true;
+    }
 
     //we pass the abstract DrawWindow
     public override void DrawWindow() {
@@ -29,8 +33,11 @@ public class InputNode : BaseInputNode {
         //We make a enum popup so the user can choose the type
         inputType = (InputType)EditorGUILayout.EnumPopup("Input type: ", inputType);
 
+        if(inputType == InputType.Int) {
+            inputValue = EditorGUILayout.TextField("Value", inputValue);
 
-        if(inputType == InputType.Number) {
+            if(inputValue != null) { convertToInt(); }
+        } else if(inputType == InputType.Float) {
             //we add a textfield for the user to insert a value
             inputValue = EditorGUILayout.TextField("Value", inputValue);
         } else if(inputType == InputType.Randomization) {
@@ -43,11 +50,20 @@ public class InputNode : BaseInputNode {
         }
 
         nodeResult = inputValue.ToString();
-
     }
 
     //Pass the abstract class
     public override void DrawCurves() { }
+
+    private void convertToInt() {
+        float rEnd = 0;
+
+        float.TryParse(inputValue, out rEnd);
+
+        int intEnd = (int)rEnd;
+
+        inputValue = intEnd.ToString();
+    }
 
     //function to calculate the random number
     private void calculateRandom() {
@@ -71,5 +87,5 @@ public class InputNode : BaseInputNode {
         inputValue = selectedValue.ToString();
     }
 
-    public override void Tick(float deltaTime) { } 
+    public override void Tick(float deltaTime) { }
 }

@@ -1,6 +1,9 @@
-﻿using UnityEngine;
+﻿#define DEBUG
+
+using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using System;
 
 //inherits from EditorWindow  
 public class NodeEditor : EditorWindow {
@@ -24,16 +27,15 @@ public class NodeEditor : EditorWindow {
     private int _mainwindowID;
 
     private int _winMinX, _winMinY;
-    private bool resizeMode = false;
+
+    //private Vector2 mouseDiff, scrollStartMousePos; For Middle mouse scrolling
 
     private System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
     float PanY;
     float PanX;
-    Vector2 mouseDiff = new Vector2(0, 0);
 
     private bool scrollWindow = false;
-    private Vector2 scrollStartMousePos;
 
     //In order to be accessible the window from the menue we add a menu item
     [MenuItem("Window/Node Editor")]
@@ -41,7 +43,7 @@ public class NodeEditor : EditorWindow {
         NodeEditor editor = EditorWindow.GetWindow<NodeEditor>();
 
         editor.stopWatch.Start();
-        editor._winMinX = editor._winMinY = 100;
+        editor._winMinX = editor._winMinY = 50;
         editor._resizeHandle = AssetDatabase.LoadAssetAtPath("Assets/Node/Textures/PNG/ResizeHandle.png", typeof(Texture2D)) as Texture2D;
         editor._icon = new GUIContent(editor._resizeHandle);
         editor._mainwindowID = GUIUtility.GetControlID(FocusType.Native);
@@ -91,12 +93,17 @@ public class NodeEditor : EditorWindow {
 
                     menu.AddItem(new GUIContent("Utility/Add Input Node"), false, ContextCallback, "inputNode");
                     menu.AddItem(new GUIContent("Utility/Add Output Node"), false, ContextCallback, "outputNode");
+
                     menu.AddItem(new GUIContent("Math/Add Calculation Node"), false, ContextCallback, "calcNode");
                     menu.AddItem(new GUIContent("Math/Add Comparison Node"), false, ContextCallback, "compNode");
+                    //menu.AddItem(new GUIContent("Math/Add Number Node"), false, ContextCallback, "numNode");
                     menu.AddSeparator("");
+                    menu.AddItem(new GUIContent("GameObject/Add GameObject Node"), false, ContextCallback, "goObj");
                     menu.AddItem(new GUIContent("GameObject/Add GameObject Active Node"), false, ContextCallback, "goActive");
                     menu.AddItem(new GUIContent("GameObject/Add GameObject Distance Node"), false, ContextCallback, "goDistance");
+
                     menu.AddItem(new GUIContent("Utility/Add Timer Node"), false, ContextCallback, "timerNode");
+                    menu.AddItem(new GUIContent("Utility/Add Bool Node"), false, ContextCallback, "boolNode");
                     menu.AddSeparator("");
                     menu.AddItem(new GUIContent("Clear All Nodes"), false, ContextCallback, "clearAll");
                     menu.AddItem(new GUIContent("Reset"), false, ContextCallback, "reset");
@@ -171,11 +178,6 @@ public class NodeEditor : EditorWindow {
                     selectedNode = nodeToChange;
                     makeTransitionMode = true;
                 }
-
-                // Check to see if resize handle was clicked
-                if(windows[selectedIndex].HandleArea.Contains(mousePos) && windows[selectedIndex].Resizable) {
-                    resizeMode = true;
-                }
             }
         }
 
@@ -196,7 +198,6 @@ public class NodeEditor : EditorWindow {
 
         //draw the actual windows
         BeginWindows();
-
         for(int i = 0; i < windows.Count; i++) {
             windows[i].WindowRect = GUI.Window(i
                 , new Rect(windows[i].WindowRect.x + PanX, windows[i].WindowRect.y + PanY,
@@ -208,53 +209,47 @@ public class NodeEditor : EditorWindow {
         EndWindows();
         GUI.EndGroup();
 
-        //if (e.keyCode == KeyCode.A && e.type == EventType.KeyDown) {
-        //    if (scrollWindow == true) { scrollWindow = false; } else {
+        // Middle mouse scrolling that doesn't work
+
+        //if(e.keyCode == KeyCode.A && e.type == EventType.KeyDown) {
+        //    if(scrollWindow == true) { scrollWindow = false; } else {
         //        scrollStartMousePos = e.mousePosition;
         //        scrollWindow = true;
         //    }
         //}
 
-        //if (e.button == 2) {
-        //    if (e.type == EventType.MouseDown) {
+        //if(e.button == 2) {
+        //    if(e.type == EventType.MouseDown) {
         //        scrollStartMousePos = e.mousePosition;
         //        scrollWindow = true;
-        //    } else if (e.type == EventType.MouseUp) { scrollWindow = false; }
+        //    } else if(e.type == EventType.MouseUp) { scrollWindow = false; }
         //}
 
-        //if (scrollWindow) {
+        //if(scrollWindow) {
         //    mouseDiff = e.mousePosition - scrollStartMousePos;
         //    PanX += mouseDiff.x / 100;
         //    PanY += mouseDiff.y / 100;
         //}
 
-        if(GUI.RepeatButton(new Rect(position.width / 2 - ( position.width / 10 ) / 2, 5
-                                    , position.width / 10, 20)
-                                    , "^")) {
+        bool topButton = GUI.RepeatButton(new Rect(position.width / 2 - ( position.width / 10 ) / 2, 5, position.width / 10, 20), "^");
+        bool leftButton = GUI.RepeatButton(new Rect(5, position.height / 2 - ( position.height / 10 ) / 2, 20, position.height / 10), "<");
+        bool rightButton = GUI.RepeatButton(new Rect(position.width - 25, position.height / 2 - ( position.height / 10 ) / 2, 20, position.height / 10), ">");
+        bool bottomButton = GUI.RepeatButton(new Rect(position.width / 2 - ( position.width / 10 ) / 2, position.height - 25, position.width / 10, 20), "v");
+
+        if(topButton) {
             PanY -= PANSPEED;
             Repaint();
-        } else if(GUI.RepeatButton(new Rect(5, position.height / 2 - ( position.height / 10 ) / 2
-                                           , 20, position.height / 10)
-                                           , "<")) {
+        } else if(leftButton) {
             PanX -= PANSPEED;
             Repaint();
-        } else if(GUI.RepeatButton(new Rect(position.width - 25, position.height / 2 - ( position.height / 10 ) / 2
-                                           , 20, position.height / 10)
-                                           , ">")) {
+        } else if(rightButton) {
             PanX += PANSPEED;
             Repaint();
-        } else if(GUI.RepeatButton(new Rect(position.width / 2 - ( position.width / 10 ) / 2, position.height - 25
-                                           , position.width / 10, 20)
-                                           , "v")) {
+        } else if(bottomButton) {
             PanY += PANSPEED;
             Repaint();
         } else
             PanX = PanY = 0;
-
-        foreach(BaseNode n in windows) {
-            EditorGUI.DrawRect(n.WindowRect, new Color(1, 0, 0, .2f));
-            EditorGUI.DrawRect(n.HandleArea, new Color(0, 1, 0, .2f));
-        }
 
         if(( Event.current.rawType == EventType.MouseUp ) && ( GUIUtility.hotControl != _mainwindowID )) {
             GUIUtility.hotControl = 0;
@@ -264,8 +259,6 @@ public class NodeEditor : EditorWindow {
     //function that draws the windows
     void DrawNodeWindow(int id) {
         windows[id].DrawWindow();
-        GUI.DragWindow();
-
 
         float _cornerX = windows[id].WindowRect.width;
         float _cornerY = windows[id].WindowRect.height;
@@ -277,7 +270,7 @@ public class NodeEditor : EditorWindow {
         GUILayout.FlexibleSpace();
 
         windows[id].HandleArea = GUILayoutUtility.GetRect(_icon, GUIStyle.none);
-        GUI.DrawTexture(new Rect(windows[id].HandleArea.xMin + 6, windows[id].HandleArea.yMin - 3, 20, 20), _resizeHandle);
+        GUI.DrawTexture(new Rect(windows[id].HandleArea.xMin + 3, windows[id].HandleArea.yMin - 3, 20, 20), _resizeHandle);
         if(!windows[id].Resizable && ( ( Event.current.type == EventType.MouseDown ) || ( Event.current.type == EventType.MouseDrag ) )) {
             if(windows[id].HandleArea.Contains(Event.current.mousePosition, true)) {
                 windows[id].Resizable = true;
@@ -288,21 +281,30 @@ public class NodeEditor : EditorWindow {
         GUILayout.EndHorizontal();
         GUILayout.EndArea();
 
-        if(windows[id].Resizable && (Event.current.type == EventType.mouseDrag)) {
+        if(windows[id].Resizable && ( Event.current.type == EventType.mouseDrag )) {
             ResizeNode(id, Event.current.delta.x, Event.current.delta.y);
             Repaint();
             Event.current.Use();
         }
-        
+        GUI.DragWindow();
+
     }
 
-    
+
     void ResizeNode(int id, float deltaX, float deltaY) {
-        windows[id].WindowRect = new Rect(windows[id].WindowRect.position.x, windows[id].WindowRect.position.y
-            , ( ( windows[id].WindowRect.width + deltaX ) > _winMinX ) ? windows[id].WindowRect.width + deltaX : windows[id].WindowRect.width
-            , ( ( windows[id].WindowRect.height + deltaY ) > _winMinY ) ? windows[id].WindowRect.height + deltaY : windows[id].WindowRect.height);
+        float targetWidth = windows[id].WindowRect.width;
+        float targetHeight = windows[id].WindowRect.height;
+
+        if(( windows[id].WindowRect.width + deltaX ) > _winMinX)
+            targetWidth = windows[id].WindowRect.width + deltaX;
+
+        if(( windows[id].WindowRect.height + deltaY ) > _winMinY)
+            targetHeight = windows[id].WindowRect.height + deltaY;
+
+        windows[id].WindowRect = new Rect(windows[id].WindowRect.position.x, windows[id].WindowRect.position.y,
+                                          targetWidth, targetHeight);
     }
-    
+
     //Is called when a selection from the context menu is made
     void ContextCallback(object obj) {
         //make the passed object to a string
@@ -329,6 +331,16 @@ public class NodeEditor : EditorWindow {
             compNode.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 95);
 
             windows.Add(compNode);
+        } else if(clb.Equals("numNode")) {
+            NumberNode numNode = ScriptableObject.CreateInstance<NumberNode>();
+            numNode.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 95);
+
+            windows.Add(numNode);
+        } else if(clb.Equals("goObj")) {
+            GameObjectNode goObj = ScriptableObject.CreateInstance<GameObjectNode>();
+            goObj.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 100);
+
+            windows.Add(goObj);
         } else if(clb.Equals("goActive")) {
             GameObjectActive goNode = ScriptableObject.CreateInstance<GameObjectActive>();
             goNode.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 80);
@@ -344,6 +356,11 @@ public class NodeEditor : EditorWindow {
             tNode.WindowRect = new Rect(mousePos.x, mousePos.y, 200, 95);
 
             windows.Add(tNode);
+        } else if(clb.Equals("boolNode")) {
+            BoolNode bNode = ScriptableObject.CreateInstance<BoolNode>();
+            bNode.WindowRect = new Rect(mousePos.x, mousePos.y, 120, 75);
+
+            windows.Add(bNode);
         } else if(clb.Equals("clearAll")) {
             windows.Clear();
 
@@ -409,5 +426,4 @@ public class NodeEditor : EditorWindow {
 
         Handles.DrawBezier(startPos, endPos, startTan, endTan, Color.black, null, 1);
     }
-
 }

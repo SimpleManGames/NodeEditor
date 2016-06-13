@@ -5,14 +5,14 @@ using System.Collections;
 public class CalcNode : BaseInputNode {
 
     //variables for our input nodes
-    private BaseInputNode input1;
-    private Rect input1Rect;
+    private BaseInputNode _input1;
+    private Rect _input1Rect;
 
-    private BaseInputNode input2;
-    private Rect input2Rect;
+    private BaseInputNode _input2;
+    private Rect _input2Rect;
 
     //the calculation types we want to have
-    private CalculationType calculationType;
+    private CalculationType _calculationType;
 
     public enum CalculationType {
         Addition,
@@ -25,6 +25,7 @@ public class CalcNode : BaseInputNode {
     public CalcNode() {
         WindowTitle = "Calculation Node";
         HasInputs = true;
+        Resizable = true;
     }
 
     public override void DrawWindow() {
@@ -33,25 +34,31 @@ public class CalcNode : BaseInputNode {
         //check for events
         Event e = Event.current;
         //make a popup for the user to select the calculation type
-        calculationType = (CalculationType)EditorGUILayout.EnumPopup("Calculation Type", calculationType);
+        _calculationType = (CalculationType)EditorGUILayout.EnumPopup("Calculation Type", _calculationType);
 
 
         string input1Title = "None";
 
         //if there is input get the result
-        if(input1) { input1Title = input1.getResult(); }
+        if(_input1) { input1Title = _input1.getResult(); }
 
         //draw a label
         GUILayout.Label("Input 1: " + input1Title);
 
-        if(e.type == EventType.Repaint) { input1Rect = GUILayoutUtility.GetLastRect(); }
+        if(e.type == EventType.Repaint) {
+            _input1Rect = GUILayoutUtility.GetLastRect();
+            _input1Rect.width = 50;
+        }
 
         string input2Title = "None";
-        if(input2) { input2Title = input2.getResult(); }
+        if(_input2) { input2Title = _input2.getResult(); }
 
         GUILayout.Label("Input 2: " + input2Title);
 
-        if(e.type == EventType.Repaint) { input2Rect = GUILayoutUtility.GetLastRect(); }
+        if(e.type == EventType.Repaint) {
+            _input2Rect = GUILayoutUtility.GetLastRect();
+            _input2Rect.width = 50;
+        }
     }
 
 
@@ -59,29 +66,29 @@ public class CalcNode : BaseInputNode {
         clickPos.x -= WindowRect.x;
         clickPos.y -= WindowRect.y;
 
-        if(input1Rect.Contains(clickPos)) { input1 = input; } 
-        else if(input2Rect.Contains(clickPos)) { input2 = input; }
+        if(_input1Rect.Contains(clickPos)) { _input1 = input; } 
+        else if(_input2Rect.Contains(clickPos)) { _input2 = input; }
     }
 
     public override void DrawCurves() {
-        if(input1) {
+        if(_input1) {
             Rect rect = WindowRect;
-            rect.x += input1Rect.x;
-            rect.y += input1Rect.y + input2Rect.height / 2;
+            rect.x += _input1Rect.x;
+            rect.y += _input1Rect.y + _input2Rect.height / 2;
             rect.width = 1;
             rect.height = 1;
 
-            NodeEditor.DrawNodeCurve(input1.WindowRect, rect);
+            NodeEditor.DrawNodeCurve(_input1.WindowRect, rect);
         }
 
-        if(input2) {
+        if(_input2) {
             Rect rect = WindowRect;
-            rect.x += input2Rect.x;
-            rect.y += input2Rect.y + input2Rect.height / 2;
+            rect.x += _input2Rect.x;
+            rect.y += _input2Rect.y + _input2Rect.height / 2;
             rect.width = 1;
             rect.height = 1;
 
-            NodeEditor.DrawNodeCurve(input2.WindowRect, rect);
+            NodeEditor.DrawNodeCurve(_input2.WindowRect, rect);
         }
     }
 
@@ -90,16 +97,16 @@ public class CalcNode : BaseInputNode {
         float input1Value = 0;
         float input2Value = 0;
 
-        if(input1) {
+        if(_input1) {
             //get the result from the first input
-            string input1Raw = input1.getResult();
+            string input1Raw = _input1.getResult();
             //try to make it a float
             float.TryParse(input1Raw, out input1Value);
         }
 
         //same as above
-        if(input2) {
-            string input2Raw = input2.getResult();
+        if(_input2) {
+            string input2Raw = _input2.getResult();
             float.TryParse(input2Raw, out input2Value);
         }
 
@@ -107,7 +114,7 @@ public class CalcNode : BaseInputNode {
         string result = "false";
 
         //switch statement for each calculation type
-        switch(calculationType) {
+        switch(_calculationType) {
             case CalculationType.Addition: result = ( input1Value + input2Value ).ToString(); break;
             case CalculationType.Division: result = ( input1Value / input2Value ).ToString(); break;
             case CalculationType.Multiplication: result = ( input1Value * input2Value ).ToString(); break;
@@ -123,19 +130,19 @@ public class CalcNode : BaseInputNode {
         pos.x -= WindowRect.x;
         pos.y -= WindowRect.y;
 
-        if(input1Rect.Contains(pos)) {
-            retVal = input1;
-            input1 = null;
-        } else if(input2Rect.Contains(pos)) {
-            retVal = input2;
-            input2 = null;
+        if(_input1Rect.Contains(pos)) {
+            retVal = _input1;
+            _input1 = null;
+        } else if(_input2Rect.Contains(pos)) {
+            retVal = _input2;
+            _input2 = null;
         }
 
         return retVal;
     }
 
     public override void NodeDeleted(BaseNode node) {
-        if(node.Equals(input1)) { input1 = null; }
-        if(node.Equals(input2)) { input2 = null; }
+        if(node.Equals(_input1)) { _input1 = null; }
+        if(node.Equals(_input2)) { _input2 = null; }
     }
 }

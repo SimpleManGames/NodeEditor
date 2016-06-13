@@ -16,6 +16,7 @@ public class TimerNode : BaseInputNode {
 
     public TimerNode() {
         WindowTitle = "Timer Node";
+        Resizable = true;
     }
 
     public override void DrawWindow() {

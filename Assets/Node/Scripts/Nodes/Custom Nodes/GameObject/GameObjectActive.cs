@@ -11,6 +11,7 @@ public class GameObjectActive : BaseInputNode {
 
     public GameObjectActive() {
         WindowTitle = "GameObject Active";
+        Resizable = true;
     } 
 
     public override void DrawWindow() {

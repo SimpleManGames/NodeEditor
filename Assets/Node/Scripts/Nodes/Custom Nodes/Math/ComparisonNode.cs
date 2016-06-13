@@ -28,6 +28,7 @@ public class ComparisonNode : BaseInputNode {
     public ComparisonNode() {
         WindowTitle = "Comparison Node";
         HasInputs = true;
+        Resizable = true;
     }
 
     public override void DrawWindow() {
